@@ -1,0 +1,53 @@
+Student Advisor Bot Using Amazon Lex
+Objective
+Build a simple chatbot named "Student Advisor Bot" with two intents: AskAboutAssignments and GetCourseInformation, using Amazon Lex and AWS Lambda for fulfillment.
+1. Create the Bot in Amazon Lex
+•	Bot Name: StudentAdvisorBot
+•	Language: English
+•	Session Timeout: 5 minutes
+•	Intents:
+1.	AskAboutAssignments
+	Sample utterances:
+	“What assignments do I have?”
+	“Do I have any assignments due?”
+	“List my upcoming assignments”
+2.	GetCourseInformation
+	Sample utterances:
+	“Tell me about {Course Name}”
+	“What is {Course Name} about?”
+	“Course details for {Course Name}”
+
+2.	Fulfillment Lambda Function
+•	Function Name: StudentAdvisorBot
+•	Runtime: Python 3.12
+•	Lambda Code:
+
+
+import json
+def lambda_handler(event, context):
+    intent_name = event["sessionState"]["intent"]["name"]
+
+    if intent_name == "AskAboutAssignments":
+        return respond("You currently have 2 assignments due: Essay 1 (due Sept 20) and Lab 3 (due Sept 25).")
+
+    elif intent_name == "GetCourseInformation":
+        slots = event["sessionState"]["intent"].get("slots", {})
+        course = slots.get("CourseName", {}).get("value", {}).get("interpretedValue", "your course")
+        return respond(f"{course} is an introductory course covering key concepts and best practices.")
+
+    else:
+        return respond("Sorry, I don’t know how to handle that yet.")
+
+def respond(message):
+    return {
+        "sessionState": {
+            "dialogAction": {"type": "Close"},
+            "intent": {
+                "name": "StudentAdvisorBot",
+                "state": "Fulfilled"
+            }
+        },
+        "messages": [
+            {"contentType": "PlainText", "content": message}
+        ]
+    }
